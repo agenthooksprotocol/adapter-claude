@@ -1,0 +1,8 @@
+{
+  "name": "agent-hooks-protocol",
+  "version": "0.1.0",
+  "description": "Agent Hooks Protocol adapter: delivers Claude Code events to AHP hook servers and applies their effects",
+  "author": { "name": "Agent Hooks Protocol" },
+  "license": "Apache-2.0",
+  "homepage": "https://github.com/agenthooksprotocol/adapter-claude"
+}

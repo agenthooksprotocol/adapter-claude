@@ -1,0 +1,5 @@
+{
+  "name": "agenthooksprotocol",
+  "owner": { "name": "Agent Hooks Protocol" },
+  "plugins": [{ "name": "agent-hooks-protocol", "source": "./plugin" }]
+}

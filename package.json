@@ -1,0 +1,21 @@
+{
+  "name": "@agenthooksprotocol/adapter-claude",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Agent Hooks Protocol adapter for Claude Code, as a Claude Code mod",
+  "license": "Apache-2.0",
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "typecheck": "tsc -p tsconfig.json",
+    "test": "node scripts/build.mjs && claude plugin validate plugin && claude plugin test plugin",
+    "check": "npm run typecheck && npm test"
+  },
+  "dependencies": {
+    "agenthooksprotocol": "file:../typescript-sdk-portable-runtime/packages/sdk"
+  },
+  "devDependencies": {
+    "esbuild": "0.25.11",
+    "typescript": "5.9.3"
+  }
+}
