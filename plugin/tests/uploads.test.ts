@@ -93,25 +93,6 @@ test("a discovered upload naming a local secret skips the backend (AHP-REG-005)"
   expect(backend.events("tool.before").length).toBe(0);
 });
 
-for (const [policy, refused] of [["fail-closed", true], ["fail-open", false]] as const) {
-  test(`an adapter failure follows a discovered ${policy} policy`, async ($, on) => {
-    engine(on, {
-      files: { [FILE]: discovered },
-      configuration: { subscriptions: [{ mode: "intercept", events: ["tool.before"], timeoutMs: 5000, failurePolicy: policy, content: { default: "body" } }] },
-    });
-    let ran = false;
-    on("tool.call", () => {
-      ran = true;
-      return { result: {} };
-    });
-    await start($);
-    // An input the SDK refuses to deliver makes the adapter's hook itself throw.
-    const result = await $.tool.call({ tool: "Bash", command: "ls", timeout: Number.NaN } as never);
-    expect(ran).toBe(!refused);
-    expect(typeof result.deny === "string").toBe(refused);
-  });
-}
-
 // `$.prompt.media` is the engine's own read and no event, so a test cannot answer
 // it: as outside a managed install, the read is refused.
 test("a pasted prompt image is a gap when its bytes cannot be read", async ($, on) => {

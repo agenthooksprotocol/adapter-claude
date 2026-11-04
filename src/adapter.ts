@@ -87,9 +87,6 @@ export class Adapter {
   media: MediaPolicy = {};
   /** The system prompt as last composed, for model.request.before. */
   systemSections: { id: string; text: string }[] = [];
-  /** Event patterns of intercept subscriptions that fail closed: the registered
-   * ones until the client starts, then every route it installed. */
-  #closed: string[] = [];
 
   #started = false;
 
@@ -125,8 +122,6 @@ export class Adapter {
       this.log("no hooks.json registration found; nothing is delivered", true);
       return;
     }
-    this.#closed = closedPatterns(registration.hooks.flatMap((backend) =>
-      Array.isArray(backend.subscriptions) ? (backend.subscriptions as Record<string, unknown>[]) : []));
     const uploads = await uploadsAvailable(host);
     this.media = uploads ? {} : { unavailable: uploadGap.reason };
     const fetch = hostFetch(host);
@@ -159,10 +154,6 @@ export class Adapter {
       }),
     });
     await hooks.initialized;
-    // Discovered failure policies live only in the client's routes, which it does
-    // not expose yet; the bundled SDK is pinned and a test covers this read.
-    const { routes } = hooks as unknown as { routes: readonly { subscription: Record<string, unknown> }[] };
-    this.#closed = closedPatterns(routes.map((route) => route.subscription));
     for (const issue of hooks.initializationDiagnostics ?? []) this.log(`initialization: ${describe(issue)}`, true);
     this.hooks = hooks;
     this.log(`delivering to ${registration.hooks.length} backend(s) from ${sources.map((s) => s.path).join(", ")}`, true);
@@ -186,13 +177,6 @@ export class Adapter {
     const hooks = this.hooks;
     this.hooks = undefined;
     await hooks?.close();
-  }
-
-  /** Whether an adapter failure at `type` must refuse the native operation:
-   * some intercept subscription for it fails closed. */
-  failsClosed(type: string): boolean {
-    return this.#closed.some((pattern) =>
-      pattern === "*" || pattern === type || (pattern.endsWith(".*") && type.startsWith(pattern.slice(0, -1))));
   }
 
   /** The AHP session object for a loop (subagents carry `agent`). */
@@ -238,13 +222,6 @@ function namesLocalSecret(configuration: { subscriptions: readonly unknown[] }):
     const binding = (subscription as { upload?: { auth?: object } }).upload?.auth;
     return binding !== undefined && ["tokenEnv", "tokenRef", "clientSecretRef"].some((key) => Object.hasOwn(binding, key));
   });
-}
-
-function closedPatterns(subscriptions: readonly Record<string, unknown>[]): string[] {
-  return subscriptions.flatMap((subscription) =>
-    subscription.mode === "intercept" && subscription.failurePolicy === "fail-closed" && Array.isArray(subscription.events)
-      ? (subscription.events as string[])
-      : []);
 }
 
 /** Effects of one type from a boundary result. */

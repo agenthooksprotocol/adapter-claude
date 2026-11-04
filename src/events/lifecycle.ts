@@ -150,8 +150,7 @@ export function installLifecycle(adapter: Adapter, on: On): void {
       adapter.report(result);
     }
     return compacted;
-  }).catch(($, e, next) =>
-    next.called || !adapter.failsClosed("context.compact.before") ? next(e) : { skip: "The AHP adapter failed and a context.compact.before subscription fails closed" });
+  });
 
   on("classic.PreModelSwitch", async ($, e, next) => {
     const ran = await next(e);
@@ -166,8 +165,7 @@ export function installLifecycle(adapter: Adapter, on: On): void {
     adapter.report(result);
     const refused = denial(result);
     return refused !== undefined ? { ...ran, permissionDecision: "deny", permissionDecisionReason: refused } : ran;
-  }).catch(($, e, next) =>
-    next.called || !adapter.failsClosed("model.switch.before") ? next(e) : { permissionDecision: "deny" as const, permissionDecisionReason: "The AHP adapter failed and a model.switch.before subscription fails closed" });
+  });
 
   on("classic.PostModelSwitch", async ($, e, next) => {
     const ran = await next(e);
@@ -203,8 +201,7 @@ export function installLifecycle(adapter: Adapter, on: On): void {
     const refused = denial(result);
     // Claude Code does not block policy settings changes.
     return refused !== undefined && e.source !== "policy_settings" ? { ...ran, block: refused } : ran;
-  }).catch(($, e, next) =>
-    next.called || !adapter.failsClosed("config.change.before") ? next(e) : { block: "The AHP adapter failed and a config.change.before subscription fails closed" });
+  });
 
   on("config.set", async ($, e, next) => {
     const set = await next(e);
@@ -259,10 +256,8 @@ export function installLifecycle(adapter: Adapter, on: On): void {
     return ran;
   });
 
-  on("classic.TaskCreated", async ($, e, next) => task(adapter, "create", e, await next(e)))
-    .catch(($, e, next) => next.called || !adapter.failsClosed("task.change.before") ? next(e) : { block: "The AHP adapter failed and a task.change.before subscription fails closed" });
-  on("classic.TaskCompleted", async ($, e, next) => task(adapter, "update", e, await next(e)))
-    .catch(($, e, next) => next.called || !adapter.failsClosed("task.change.before") ? next(e) : { block: "The AHP adapter failed and a task.change.before subscription fails closed" });
+  on("classic.TaskCreated", async ($, e, next) => task(adapter, "create", e, await next(e)));
+  on("classic.TaskCompleted", async ($, e, next) => task(adapter, "update", e, await next(e)));
 
   on("classic.Notification", async ($, e, next) => {
     const ran = await next(e);
@@ -296,8 +291,7 @@ export function installLifecycle(adapter: Adapter, on: On): void {
     adapter.report(result);
     const refused = denial(result);
     return refused !== undefined ? { ...ran, block: refused } : ran;
-  }).catch(($, e, next) =>
-    next.called || !adapter.failsClosed("user.elicitation.request") ? next(e) : { block: "The AHP adapter failed and a user.elicitation.request subscription fails closed" });
+  });
 
   on("classic.ElicitationResult", async ($, e, next) => {
     const ran = await next(e);

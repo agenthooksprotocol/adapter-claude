@@ -88,10 +88,7 @@ export function installTurns(adapter: Adapter, on: On): void {
       ...(text !== e.text && !e.command && !e.isMeta ? { text } : {}),
       ...(context.length ? { context: [...(e.context ?? []), ...context] } : {}),
     });
-  }).catch(($, e, next) =>
-    next.called || !adapter.failsClosed("turn.start")
-      ? next(e)
-      : { drop: "The AHP adapter failed and a turn.start subscription fails closed" });
+  });
 
   on("turn.start", async ($, e, next) => {
     const loop = e.agentId ?? MAIN;
@@ -255,8 +252,7 @@ export function installTurns(adapter: Adapter, on: On): void {
     if (refused !== undefined) return { consumed: refused };
     const text = texts((result.event as { message?: { messages?: unknown[] } }).message?.messages).join("\n");
     return next(text && text !== e.text ? { ...e, text } : e);
-  }).catch(($, e, next) =>
-    next.called || !adapter.failsClosed("user.message.inbound") ? next(e) : { consumed: "The AHP adapter failed and a user.message.inbound subscription fails closed" });
+  });
 
   on("session.send", async ($, e, next) => {
     const hooks = await adapter.client("user.message.outbound");
@@ -276,8 +272,7 @@ export function installTurns(adapter: Adapter, on: On): void {
     if (refused !== undefined) return { isDelivered: false, reason: refused };
     const text = texts((result.event as { message?: { messages?: unknown[] } }).message?.messages).join("\n");
     return next(text && text !== e.text ? { ...e, text } : e);
-  }).catch(($, e, next) =>
-    next.called || !adapter.failsClosed("user.message.outbound") ? next(e) : { isDelivered: false as const, reason: "The AHP adapter failed and a user.message.outbound subscription fails closed" });
+  });
 }
 
 type Stopped = { block?: string; preventContinuation?: true; stopReason?: string; additionalContext?: string[] };

@@ -96,10 +96,7 @@ export function installTools(adapter: Adapter, on: On): void {
     adapter.calls.delete(callId);
     if (ran.deny !== undefined || !context.length) return ran;
     return { ...ran, context: [...(ran.context ?? []), ...context] };
-  }).catch(($, e, next) =>
-    next.called || !adapter.failsClosed("tool.before")
-      ? next(e)
-      : { deny: "The AHP adapter failed and a tool.before subscription fails closed" });
+  });
 
   // tool.after where Claude Code itself lets a hook replace what the model reads.
   on("classic.PostToolUse", async ($, e, next) => {
@@ -168,8 +165,7 @@ export function installTools(adapter: Adapter, on: On): void {
     if (decision !== "ask") await resolved(adapter, call, e.tool_use_id!, decision, decidedBy);
     if (decision === verdict.decision) return verdict;
     return { ...verdict, decision, reason: decision === "allow" ? "Allowed by an AHP hook" : "An AHP hook asks for approval" };
-  }).catch(($, e, next) =>
-    next.called || !adapter.failsClosed("tool.before") ? next(e) : { decision: "deny" as const, reason: "The AHP adapter failed and a tool.before subscription fails closed" });
+  });
 
   on("classic.PermissionRequest", async ($, e, next) => {
     const hooks = await adapter.client("tool.permission.request");
@@ -206,8 +202,7 @@ export function installTools(adapter: Adapter, on: On): void {
       };
     }
     return next(e);
-  }).catch(($, e, next) =>
-    next.called || !adapter.failsClosed("tool.permission.request") ? next(e) : { decision: { behavior: "deny" as const, message: "The AHP adapter failed and a tool.permission.request subscription fails closed" } });
+  });
 
   on("classic.PostToolBatch", async ($, e, next) => {
     const hooks = await adapter.client("tool.batch.after");
