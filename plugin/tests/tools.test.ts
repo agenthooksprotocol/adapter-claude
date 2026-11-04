@@ -82,6 +82,27 @@ test("tool.after reports the result and replaces what the model reads", async ($
   expect(classic?.updatedToolOutput).toBe("[redacted]");
 });
 
+test("a per_event stdio backend runs in the sandbox and its deny applies", async ($, on) => {
+  const backend = engine(on, {
+    files: {
+      [USER_FILE]: {
+        protocolVersion: "draft",
+        hooks: [{
+          id: "org.example.stdio",
+          transport: { type: "stdio", command: "policy", lifecycle: "per_event" },
+          subscriptions: [{ mode: "intercept", events: ["tool.before"], timeoutMs: 5000, failurePolicy: "fail-closed", content: { default: "body" } }],
+        }],
+      },
+    },
+    respond: () => [{ type: "deny", reason: "stdio says no" }],
+  });
+  on("tool.call", () => ({ result: {} }));
+  await start($);
+  const result = await $.tool.call({ tool: "Bash", command: "echo 😀" });
+  expect(result.deny).toBe("stdio says no");
+  expect(backend.events("tool.before").length).toBe(1);
+});
+
 test("an unreachable fail-closed backend refuses the call", async ($, on) => {
   engine(on, { files: { [USER_FILE]: registration(["tool.before"]) }, unreachable: true });
   on("tool.call", () => ({ result: {} }));

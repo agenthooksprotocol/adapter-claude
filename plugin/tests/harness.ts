@@ -74,6 +74,14 @@ export function engine(on: On, world: World): Backend {
   // curl, as the upload path drives it: base64 in, receipt and write-out back.
   on("process.spawn", async function* (_$, e) {
     const env = (e.env ?? {}) as Record<string, string>;
+    // Anything but sh is a stdio backend: one message in, one reply out.
+    if (e.argv[0] !== "sh") {
+      const request = JSON.parse(e.input ?? "{}") as Request;
+      received.push(request);
+      if (request.method !== "hooks/observe")
+        yield { stream: "stdout" as const, text: JSON.stringify({ jsonrpc: "2.0", id: request.id, result: { protocolVersion: "draft", effects: world.respond?.(request) ?? [] } }) + "\n" };
+      return { value: { code: 0, signal: null } };
+    }
     uploads.push({ env, base64: e.input ?? "" });
     const headers = Object.values(env).filter((value) => value.startsWith("ahp-content-sha256:"));
     const sha256 = (headers[0] ?? "").split(": ")[1];

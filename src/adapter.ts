@@ -143,9 +143,6 @@ export class Adapter {
       fetch,
       spawn: hostSpawn(host),
       maxContentBytes: MAX_UPLOAD_BYTES,
-      // AHP-REG-005 as revised: discovered uploads need no approval unless they
-      // name a local secret. Goes away with the SDK's own check.
-      authorizeDiscoveredConfiguration: (configuration) => !namesLocalSecret(configuration),
       environment,
       auth: auth({
         fetch,
@@ -215,13 +212,6 @@ export class Adapter {
     }
     for (const text of messages(result)) this.log(text);
   }
-}
-
-function namesLocalSecret(configuration: { subscriptions: readonly unknown[] }): boolean {
-  return configuration.subscriptions.some((subscription) => {
-    const binding = (subscription as { upload?: { auth?: object } }).upload?.auth;
-    return binding !== undefined && ["tokenEnv", "tokenRef", "clientSecretRef"].some((key) => Object.hasOwn(binding, key));
-  });
 }
 
 /** Effects of one type from a boundary result. */
