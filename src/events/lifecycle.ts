@@ -126,7 +126,8 @@ export function installLifecycle(adapter: Adapter, on: On): void {
       if (refused !== undefined) return { skip: refused };
       const candidate = (result.state as { candidate?: { value: unknown } | null }).candidate;
       if (candidate) {
-        const summary = typeof candidate.value === "string" ? candidate.value : texts(candidate.value as unknown[]).join("\n") || asText(candidate.value);
+        // A compaction's `return` carries text parts, not messages.
+        const summary = typeof candidate.value === "string" ? candidate.value : texts([{ parts: candidate.value }]).join("\n");
         return { messages: [{ role: "user", text: summary, toolUses: [] }] };
       }
       const changed = (result.state as { instructions?: string[] }).instructions;
