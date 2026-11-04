@@ -139,9 +139,12 @@ the build on a dynamic import, an external import or an oversized file.
 
 ```sh
 npm run build        # bundle into plugin/hooks
-npm run typecheck    # tsc against vendor/claude-code (Claude Code 2.1.314)
+npm run typecheck    # tsc against vendor/claude-code (see below)
 npm test             # build, claude plugin validate, claude plugin test
 ```
 
-`vendor/claude-code/index.d.ts` is the mod API declaration Claude Code 2.1.314
-writes; replace it when targeting another build.
+`npm run typecheck` needs the mod API declarations Claude Code writes, which this
+repository does not carry. Load the plugin once in an interactive session
+(`claude --plugin-dir ./plugin`), then copy
+`plugin/.claude-plugin/types/claude-code/index.d.ts` to
+`vendor/claude-code/index.d.ts`.
