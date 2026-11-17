@@ -1,6 +1,6 @@
 {
   "name": "@agenthooksprotocol/adapter-claude",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
   "type": "module",
   "description": "Agent Hooks Protocol adapter for Claude Code, as a Claude Code mod",
@@ -12,7 +12,7 @@
     "check": "npm run typecheck && npm test"
   },
   "dependencies": {
-    "agenthooksprotocol": "0.11.0"
+    "agenthooksprotocol": "0.12.0"
   },
   "devDependencies": {
     "esbuild": "0.25.11",

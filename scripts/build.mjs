@@ -61,7 +61,7 @@ const nodeBuiltins = {
 const noDynamicImport = {
   name: "no-dynamic-import",
   setup(build) {
-    build.onLoad({ filter: /agenthooksprotocol\/.*\/dist\/src\/.*\.js$|packages\/sdk\/dist\/src\/.*\.js$/ }, (args) => {
+    build.onLoad({ filter: /agenthooksprotocol\/(?:.*\/)?dist\/src\/.*\.js$|packages\/sdk\/dist\/src\/.*\.js$/ }, (args) => {
       const source = readFileSync(args.path, "utf8");
       if (!source.includes("import(")) return undefined;
       return {
